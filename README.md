@@ -90,7 +90,6 @@ itv-inspection-analytics/
 ![Distribución de riesgos](docs/graphs/Tasa_aprobacion.png)
 
  **Insight:**  
-INSIGHT:
 
 La tasa de aprobación del sistema ITV es del 71,43%, con 15 inspecciones aptas de un total de 21 realizadas.
 
