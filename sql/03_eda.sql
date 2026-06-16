@@ -105,6 +105,11 @@ FROM fact_inspecciones;
 /*
 INSIGHT:
 
+La tasa de aprobación del sistema ITV es del 71,43%, con 15 inspecciones aptas de un total de 21 realizadas.
+
+Este resultado indica que aproximadamente 7 de cada 10 vehículos superan la inspección en el primer intento, mientras que el 28,57% restante presenta defectos que requieren una nueva revisión o una reparación previa.
+
+Desde el punto de vista del negocio, este porcentaje refleja un nivel de cumplimiento elevado, aunque sigue existiendo un volumen relevante de inspecciones no aptas que generan segundas revisiones y, por tanto, actividad e ingresos adicionales para las estaciones ITV.
 */
 
 -- 3. ANÁLISIS DE INGRESOS
@@ -118,6 +123,9 @@ FROM fact_inspecciones;
 /*
 INSIGHT:
 
+Las 21 inspecciones realizadas han generado unos ingresos totales de 1.275 €, con un ingreso medio de 60,71 € por inspección.
+
+El importe medio se mantiene bastante estable, lo que indica una política de precios homogénea entre las diferentes revisiones realizadas. Además, el volumen de ingresos está impulsado tanto por las inspecciones iniciales como por las segundas revisiones derivadas de resultados desfavorables o negativos, aumentando la rentabilidad del servicio sin necesidad de captar nuevos clientes.
 */
 
 
@@ -137,7 +145,9 @@ ORDER BY total_inspecciones DESC;
 /*
 INSIGHT:
 
+La estación ITV Barcelona Sur destaca como el centro con mejor rendimiento del conjunto, acumulando 5 inspecciones y alcanzando una tasa de aprobación del 100%, lo que refleja una alta eficacia operativa y un parque de vehículos en buen estado. 
 
+Por otro lado, ITV Málaga Este presenta el mayor ingreso medio por inspección (70 €), mientras que estaciones como ITV Barcelona Norte, ITV Bilbao Norte e ITV Murcia Oeste muestran una mayor presencia de inspecciones con incidencias, ya que únicamente una de cada tres revisiones finaliza con resultado favorable.
 */
 
 
@@ -157,24 +167,41 @@ LIMIT 10;
 /*
 INSIGHT:
 
+Jorge Fernández y Raquel Jiménez son los clientes más recurrentes del sistema, con 4 inspecciones cada uno, lo que refleja un seguimiento periódico de sus vehículos y una alta fidelidad al servicio ITV. 
+
+Además, la presencia de varios clientes con más de una inspección confirma que el conjunto de datos simula adecuadamente situaciones reales, incluyendo revisiones periódicas, segundas inspecciones tras resultados desfavorables y mantenimiento continuado del vehículo a lo largo del tiempo.
 */
 
 
--- 6. SUBQUERY: VEHÍCULOS MÁS INSPECCIONADOS
+-- 6. SUBQUERY: VEHÍCULOS MÁS INSPECCIONADOS 
 
 
 
-SELECT *
-FROM dim_vehiculos
-WHERE id_vehiculo IN (
-    SELECT id_vehiculo
+SELECT 
+    v.id_vehiculo,
+    v.matricula,
+    v.marca,
+    v.modelo,
+    t.total_inspecciones
+FROM dim_vehiculos v
+JOIN (
+    SELECT 
+        id_vehiculo,
+        COUNT(*) AS total_inspecciones
     FROM fact_inspecciones
     GROUP BY id_vehiculo
-    HAVING COUNT(*) > 1
-);
+    ORDER BY total_inspecciones DESC
+    LIMIT 3
+) t
+ON v.id_vehiculo = t.id_vehiculo;
 
 /*
+INSIGHT:
 
+Los vehículos más inspeccionados son el Renault Megane (4 inspecciones), el Seat Toledo (3) y el Renault Clio (3), lo que indica dos patrones claros en el sistema:
+
+1. Vehículos con incidencias recurrentes: el Megane concentra el mayor número de inspecciones, lo que sugiere posibles fallos repetidos o revisiones consecutivas tras resultados desfavorables.
+2. Reinspecciones tras fallo: la presencia de varios vehículos con 3 inspecciones refuerza el comportamiento típico del sistema ITV, donde un mismo vehículo puede pasar varias revisiones hasta obtener un resultado favorable.
 */
 
 
@@ -194,59 +221,32 @@ FROM fact_inspecciones;
 /*
 INSIGHT:
 
+La distribución del nivel de riesgo está fuertemente concentrada en la categoría BAJO, lo que indica que la mayoría de inspecciones no presentan defectos graves o estos son inexistentes.
+
+Sin embargo, existe un grupo reducido de inspecciones en nivel MEDIO y ALTO que representa los casos críticos del sistema. Estos casos deben considerarse prioritarios dentro del modelo ITV, ya que concentran los vehículos con mayor probabilidad de requerir intervención mecánica o revisión inmediata.
+
+En conjunto, el sistema muestra una base mayoritariamente estable, con una minoría de inspecciones que concentran el riesgo operativo.
 */
 
 
--- 8. MARCAS CON MAYOR NÚMERO DE DEFECTOS GRAVES
+-- 8. DISTRIBUCIÓN DE INSPECCIONES POR NIVEL DE RIESGO
 
 SELECT
-    v.marca,
-    COUNT(*) AS total_inspecciones,
-    SUM(f.defectos_graves) AS total_defectos_graves,
-    ROUND(AVG(f.defectos_graves),2) AS media_defectos_graves
-FROM fact_inspecciones f
-JOIN dim_vehiculos v
-    ON f.id_vehiculo = v.id_vehiculo
-GROUP BY v.marca
-ORDER BY media_defectos_graves DESC;
+    fn_clasificar_riesgo(defectos_graves) AS nivel_riesgo,
+    COUNT(*) AS total_inspecciones
+FROM fact_inspecciones
+GROUP BY fn_clasificar_riesgo(defectos_graves)
+ORDER BY total_inspecciones DESC;
 
 /*
 INSIGHT:
 
-Permite identificar qué marcas acumulan una mayor cantidad de defectos graves
-durante las inspecciones.
+La mayor parte de las inspecciones se concentran en el nivel de riesgo BAJO (15 casos), lo que confirma que el parque de vehículos analizado presenta un estado general adecuado y con pocos defectos graves.
 
-Esta información puede ayudar a detectar patrones de mantenimiento deficientes
-o posibles tendencias asociadas a determinados fabricantes.
+No obstante, existen 4 inspecciones en riesgo MEDIO y 2 en riesgo ALTO, lo que representa aproximadamente un 28% del total de inspecciones con algún grado de riesgo relevante. Esto sugiere que, aunque la situación global es positiva, hay un volumen no despreciable de vehículos que requieren seguimiento o intervención para evitar que evolucionen hacia fallos más graves.
 */
 
 
-Sí, el 8 y el 9 ahora mismo analizan prácticamente lo mismo que el 7 y el 6. Para subir nota, yo los cambiaría por preguntas de negocio más interesantes.
-
-8. ¿Qué marcas presentan más incidencias graves?
--- 8. MARCAS CON MAYOR NÚMERO DE DEFECTOS GRAVES
-
-SELECT
-    v.marca,
-    COUNT(*) AS total_inspecciones,
-    SUM(f.defectos_graves) AS total_defectos_graves,
-    ROUND(AVG(f.defectos_graves),2) AS media_defectos_graves
-FROM fact_inspecciones f
-JOIN dim_vehiculos v
-    ON f.id_vehiculo = v.id_vehiculo
-GROUP BY v.marca
-ORDER BY media_defectos_graves DESC;
-
-/*
-INSIGHT:
-
-Permite identificar qué marcas acumulan una mayor cantidad de defectos graves
-durante las inspecciones.
-
-Esta información puede ayudar a detectar patrones de mantenimiento deficientes
-o posibles tendencias asociadas a determinados fabricantes.
-*/
-9. ¿Qué inspectores realizan más inspecciones?
 -- 9. PRODUCTIVIDAD DE INSPECTORES
 
 SELECT
@@ -263,16 +263,16 @@ ORDER BY total_inspecciones DESC;
 /*
 INSIGHT:
 
-Permite medir la carga de trabajo de cada inspector y detectar posibles
-desequilibrios en la asignación de inspecciones.
+La carga de trabajo entre inspectores está relativamente equilibrada, con Antonio y Teresa como los más productivos (5 inspecciones cada uno), seguidos por Patricia (3).
 
-También facilita identificar empleados con mayor experiencia operativa
-y evaluar la distribución de recursos dentro de las estaciones ITV.
+Se observa además que no existe una relación directa entre categoría y volumen de inspecciones, ya que tanto perfiles Junior como Senior aparecen mezclados en los niveles más altos de actividad.
+
+En cuanto al importe medio, los inspectores Senior tienden a gestionar inspecciones con importes ligeramente superiores en algunos casos, lo que puede estar asociado a inspecciones más complejas o vehículos con mayor nivel de revisión.
 */
 
--- 
+
 -- 10. WINDOW FUNCTION: MEDIA DE INGRESOS POR VEHÍCULO
--- 
+
 
 SELECT 
     id_inspeccion,
@@ -284,11 +284,16 @@ FROM fact_inspecciones;
 /*
 INSIGHT:
 
+El análisis de media de ingresos por vehículo muestra una gran estabilidad en los precios de inspección, ya que cada vehículo mantiene prácticamente el mismo importe en todas sus revisiones.
+
+Esto indica que el sistema ITV no está aplicando variaciones de precio significativas por vehículo dentro del periodo analizado, lo que sugiere una política de tarificación fija por tipo de inspección más que por historial del vehículo.
+
+Además, se observa que los vehículos con múltiples inspecciones (como el id 12 o el id 2) no presentan variaciones en el coste, lo que refuerza la idea de que las reinspecciones no generan cambios económicos en el modelo actual.
 */
 
--- 
+
 -- 11. ANÁLISIS TEMPORAL AÑO 2024
--- 
+
 
 SELECT 
     d.anio,
@@ -303,12 +308,16 @@ ORDER BY d.anio, d.mes;
 /*
 INSIGHT:
 
+El volumen de inspecciones se concentra principalmente en los meses centrales del año (mayo, agosto y octubre), lo que sugiere una estacionalidad clara en la actividad ITV.
+
+En términos de rendimiento, se observa una mejora progresiva en la tasa de aprobaciones a partir de abril, alcanzando meses como mayo, julio y agosto con un 100% de aprobaciones.
+
+Sin embargo, meses como febrero, marzo y junio muestran una ausencia total de inspecciones favorables, lo que puede indicar periodos con mayor proporción de vehículos en mal estado o revisiones más exigentes.
 */
 
--- 
+
 -- 12. INGRESOS POR ESTACIÓN
--- 
--- añadir media de ingresos por inspecciones
+
 SELECT 
     e.nombre_estacion,
     SUM(f.importe) AS ingresos_totales
@@ -320,11 +329,16 @@ ORDER BY ingresos_totales DESC;
 /*
 INSIGHT:
 
-*/
+Los ingresos están claramente concentrados en unas pocas estaciones, destacando ITV Málaga Este y ITV Barcelona Sur como los principales motores de facturación.
 
--- 
+Estas estaciones no solo generan más volumen de inspecciones, sino que también mantienen importes medios elevados, lo que sugiere una combinación de alta demanda y tarifas sostenidas.
+
+En el extremo inferior, ITV Alicante Sur y Zaragoza Centro presentan una baja contribución a ingresos, lo que puede indicar menor volumen operativo o menor rotación de vehículos en esas zonas.
+*/
+ 
+
 -- 13. ESTADÍSTICAS DE DEFECTOS
--- 
+ 
 
 SELECT 
     AVG(defectos_graves) AS media_defectos_graves,
@@ -334,6 +348,9 @@ FROM fact_inspecciones;
 
 /*
 INSIGHT:
-Mide la severidad general del parque automovilístico.
-Valores altos indican necesidad de mantenimiento preventivo.
+
+La media de defectos graves es baja (0.76 por inspección), con un máximo de 5 defectos en casos puntuales y un mínimo de 0, lo que indica que la mayoría de vehículos no presentan problemas graves en la inspección.
+
+Esto sugiere que el parque de vehículos analizado tiene un estado general aceptable, aunque existen casos aislados con fallos severos que elevan el riesgo y deberían ser objeto de seguimiento específico para evitar reincidencias o fallos críticos en futuras inspecciones.
+
 */
