@@ -57,32 +57,12 @@ itv-inspection-analytics/
 │
 └── docs/
     └── business_rules.md
-<<<<<<< HEAD
-=======
     │__ graph/
->>>>>>> 5492dde (Proyecto finalizado)
 ```
 ---
 
 ## 📊 KPIs e Insights Clave
 
-<<<<<<< HEAD
-- ✔ Tasa de aprobación global y rendimiento por estación ITV  
-- ✔ Ingresos generados por inspección y por estación  
-- ✔ Comportamiento de vehículos con inspecciones recurrentes  
-- ✔ Productividad de inspectores según volumen y facturación media  
-- ✔ Distribución de la severidad de defectos en las inspecciones  
-- ✔ Evolución temporal de inspecciones por meses  
-
----
-
-## 🔍 Insights de Negocio
-
-- Las estaciones con mayor volumen de inspecciones no siempre son las más eficientes en ingresos.
-- Un grupo reducido de vehículos concentra múltiples inspecciones, lo que indica posibles problemas recurrentes de mantenimiento o reincidencias.
-- La mayoría de inspecciones se clasifican como “BAJO RIESGO”, aunque existe un porcentaje relevante de casos con defectos graves.
-- La productividad de los inspectores varía significativamente, lo que sugiere diferencias en carga de trabajo o asignación de inspecciones.
-=======
 ---
 
 ### 1. Tasa de aprobación global
@@ -152,14 +132,12 @@ El volumen de inspecciones se concentra principalmente en los meses centrales de
 La mayor parte de las inspecciones se concentran en el nivel de riesgo BAJO (15 casos), lo que confirma que el parque de vehículos analizado presenta un estado general adecuado y con pocos defectos graves.
 
 No obstante, existen 4 inspecciones en riesgo MEDIO y 2 en riesgo ALTO, lo que representa aproximadamente un 28% del total de inspecciones con algún grado de riesgo relevante. Esto sugiere que, aunque la situación global es positiva, hay un volumen no despreciable de vehículos que requieren seguimiento o intervención para evitar que evolucionen hacia fallos más graves.
-*/
->>>>>>> 5492dde (Proyecto finalizado)
 
 ---
 
 ## 🛠 Tecnologías Utilizadas
 
-- SQL (MySQL)
+- SQL (MySQL, Workbench)
 - Modelado de datos (Esquema en estrella)
 - Conceptos ETL (limpieza y transformación de datos)
 - SQL analítico (CTEs, funciones ventana, subconsultas)
@@ -170,11 +148,8 @@ No obstante, existen 4 inspecciones en riesgo MEDIO y 2 en riesgo ALTO, lo que r
 
 Este proyecto demuestra la capacidad de:
 
-<<<<<<< HEAD
 - Diseñar e implementar un Data Warehouse relacional
-=======
 - Diseñar e implementar un Data Base relacional
->>>>>>> 5492dde (Proyecto finalizado)
 - Trabajar con datos reales simulados con errores y nulos
 - Construir consultas analíticas orientadas a negocio
 - Transformar datos en insights accionables
