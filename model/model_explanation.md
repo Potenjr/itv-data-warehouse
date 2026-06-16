@@ -33,7 +33,9 @@ Es la tabla central del modelo.
 Contiene:
 - métricas numéricas (importe, defectos)
 - claves foráneas a dimensiones
+- importe
 - resultado de la inspección
+- defectos leves y graves
 
 Representa cada inspección realizada en el sistema ITV.
 
@@ -45,9 +47,12 @@ Representa cada inspección realizada en el sistema ITV.
 Información sobre los propietarios de vehículos.
 
 Campos clave:
+- id_cliente
 - nombre
 - apellido
 - provincia
+- email
+- telefono
 - fecha_alta
 
 ---
@@ -56,11 +61,13 @@ Campos clave:
 Información técnica de los vehículos.
 
 Campos clave:
+- id_vehiculo
 - matrícula (única)
 - marca
 - modelo
 - combustible
 - año de fabricación
+- color
 
 ---
 
@@ -68,8 +75,10 @@ Campos clave:
 Información de las estaciones ITV.
 
 Campos clave:
+- id_estacion
 - nombre de estación
 - provincia
+- telefono_contacto
 
 ---
 
@@ -77,9 +86,11 @@ Campos clave:
 Información del personal inspector.
 
 Campos clave:
+- id_inspector
 - nombre
 - categoría
 - fecha de contratación
+- telefono
 
 ---
 
@@ -87,11 +98,13 @@ Campos clave:
 Dimensión temporal para análisis histórico.
 
 Campos clave:
+- id_fecha
 - fecha
 - mes
 - trimestre
 - año
 - día de la semana
+- es_festivo
 
 ---
 
